@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using DG.Tweening.Core;
+using DG.Tweening.Plugins.Options;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +24,8 @@ public class GameCardItem : MonoBehaviour
     private Button m_Button;
 
     private Transform m_Mask;
+
+    private TweenerCore<Vector3, Vector3, VectorOptions> m_ScalseTween;
     
     private void Awake()
     {
@@ -70,15 +74,18 @@ public class GameCardItem : MonoBehaviour
     /// </summary>
     private void SendEnterBag()
     {
-        //向背包发送请求
+        GameLevelUtility.CardEnterBag(this);
     }
 
     /// <summary>
     /// 接收背包消息
     /// </summary>
-    private void ReceiveBag(Vector3 aimPos)
+    public void ReceiveBag(Vector2 aimPos)
     {
-        transform.DOLocalMove(aimPos, 0.5f).SetEase(Ease.Linear).OnComplete(() =>
+        GameLevelUtility.CardItemDelOperate(m_Data.Layer, m_Data.Horizontal, m_Data.Vertical);
+        GameLevelUtility.CheckBottomCardMask(m_Data.Layer, m_Data.Horizontal, m_Data.Vertical, false);
+        
+        transform.DOLocalMove(aimPos, 0.2f).SetEase(Ease.Linear).OnComplete(() =>
         {
             SendBagCheckTriple();
         });
@@ -89,13 +96,13 @@ public class GameCardItem : MonoBehaviour
     /// </summary>
     private void SendBagCheckTriple()
     {
-        
+        GameLevelUtility.CheckTripleCard(this);
     }
 
     /// <summary>
     /// 接受到三连的请求
     /// </summary>
-    public void Triple()
+    public void ReceiveTriple()
     {
         CardDestroy();
     }
@@ -105,7 +112,15 @@ public class GameCardItem : MonoBehaviour
     /// </summary>
     private void CardDestroy()
     {
-        
+        if(m_ScalseTween != null)
+            return;
+
+        transform.GetComponent<CanvasGroup>().DOFade(0.3f, 0.3f).SetEase(Ease.Linear);
+
+        m_ScalseTween = transform.DOScale(0.3f, 0.3f).SetEase(Ease.Linear).OnComplete(() =>
+        {
+            transform.gameObject.SetActive(false);
+        });
     }
 
     private void Update()

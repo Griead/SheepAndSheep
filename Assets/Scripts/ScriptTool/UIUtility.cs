@@ -53,4 +53,17 @@ public static class UIUtility
         
         UIBaseDict[type].Show(parameter);
     }
+
+    public static T GetUIView<T>(UIType type) where T : UIBaseView
+    {
+        if (!UIBaseDict.ContainsKey(type))
+        {
+            Debug.Log("未找到视图");
+            return null;
+        }
+        else
+        {
+            return UIBaseDict[type] as T;
+        }
+    }
 }

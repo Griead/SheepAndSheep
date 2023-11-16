@@ -5,8 +5,13 @@ using Work;
 public static class GameLevelUtility
 {
     private static string m_CardPrefabPath = "Prefab/GameCardItem";
-    public static GameObject m_CardModel;
+    private static GameObject m_CardModel;
     private static GameLevelConfig m_CurLevelConfig;
+    private static Dictionary<int, GameCardItem[][]> m_ItemsMapLayerDict;
+    private static GameObject[][] m_ParentMaps;
+
+    private static GameCardBagItem m_BagItem;
+    
     public static void Init()
     {
         m_CardModel = Resources.Load<GameObject>(m_CardPrefabPath);
@@ -15,14 +20,22 @@ public static class GameLevelUtility
     /// <summary>
     /// 首先生成格子
     /// </summary>
-    public static void CreateGrid(Transform root, GameLevelConfig levelConfig, ref Dictionary<int, GameCardItem[][]> ItemsMapLayerDict)
+    public static void CreateGrid(Transform root, GameLevelConfig levelConfig, GameCardBagItem bagItem)
     {
+        m_BagItem = bagItem;
+        m_ItemsMapLayerDict = new Dictionary<int, GameCardItem[][]>();
+        //准备设置父级数据
+        SetRoot(root, levelConfig.BottomMaxSize, levelConfig.LayerSizeArray.Length);   
         for (int n = 0; n < levelConfig.LayerSizeArray.Length; n++)
         {
             int curLayerMaxSize = levelConfig.BottomMaxSize - n;
             //获取第一层的左上角坐标
-            Vector2 leftTop = new Vector2(root.localPosition.x - (curLayerMaxSize / 2f * GameDefine.GameCardItemSize), root.localPosition.z - (curLayerMaxSize / 2f * GameDefine.GameCardItemSize));
-        
+            Vector2 leftTop = new Vector2(root.localPosition.x - (curLayerMaxSize / 2f * GameDefine.GameCardItemSize), root.localPosition.z + (curLayerMaxSize / 2f * GameDefine.GameCardItemSize));
+            
+            //偏移修正
+            leftTop = new Vector2(leftTop.x + GameDefine.GameCardItemSize / 2f,
+                leftTop.y + GameDefine.GameCardItemSize / 2f);
+            
             Dictionary<int, List<int>> GridDict = new Dictionary<int, List<int>>();
             for (int i = 0; i < curLayerMaxSize; i++)
             {
@@ -43,12 +56,13 @@ public static class GameLevelUtility
                 int vertical = -1;
                 if (RandomCardPosIndex(ref GridDict, ref horizontal, ref vertical))
                 {                
-                    var go = Object.Instantiate(m_CardModel, root);
+                    var go = Object.Instantiate(m_CardModel, GetRoot(layer, vertical));
+                    go.name = $"Item_L{layer}_H{horizontal}_V{vertical}";
                     go.GetComponent<RectTransform>().anchoredPosition = CalculateCardLocation(leftTop, horizontal, vertical);
                     var gameCardItem = go.AddComponent<GameCardItem>();
                     gameCardItem.SetData(RandomCardItem(levelConfig.ContainCardEnumArray), new GameCardData() {Layer = layer,Horizontal = horizontal, Vertical = vertical} );
                     //赋值数据
-                    if (ItemsMapLayerDict.TryGetValue(layer, out var itemMaps))
+                    if (m_ItemsMapLayerDict.TryGetValue(layer, out var itemMaps))
                     {
                         itemMaps[horizontal][vertical] = gameCardItem;
                     }
@@ -60,10 +74,10 @@ public static class GameLevelUtility
                             newLayerMap[x] = new GameCardItem[curLayerMaxSize];
                         }
                         newLayerMap[horizontal][vertical] = gameCardItem;
-                        ItemsMapLayerDict.Add(layer, newLayerMap);
+                        m_ItemsMapLayerDict.Add(layer, newLayerMap);
                     }
 
-                    CheckBottomCardMask(ItemsMapLayerDict, layer, horizontal, vertical, IsCover: true);
+                    CheckBottomCardMask(layer, horizontal, vertical, IsCover: true);
                     CreateCount ++;
                 }
                 else
@@ -109,7 +123,7 @@ public static class GameLevelUtility
     private static Vector3 CalculateCardLocation(Vector2 leftTop, int horizontal, int vertical)
     {
         return new Vector2(leftTop.x + horizontal * GameDefine.GameCardItemSize,
-            leftTop.y + vertical * GameDefine.GameCardItemSize);
+            leftTop.y - vertical * GameDefine.GameCardItemSize);
     }
 
     private static GameCardConfig RandomCardItem(GameCardEnum[] array)
@@ -120,28 +134,31 @@ public static class GameLevelUtility
     /// <summary>
     /// 随机卡牌坐标
     /// </summary>
-    /// <param name="GridDict"></param>
-    /// <param name="horizontalIndex"></param>
-    /// <param name="verticalIndex"></param>
     /// <returns></returns>
-    private static bool RandomCardPosIndex(ref Dictionary<int,List<int>> GridDict, ref int horizontalIndex, ref int verticalIndex)
+    private static bool RandomCardPosIndex(ref Dictionary<int, List<int>> GridDict, ref int horizontalResultIndex,
+        ref int verticalResultIndex)
     {
         if (GridDict.Count > 0)
         {
             //随机横
-            int horizontalMaxCount = GridDict.Keys.Count;
-            horizontalIndex = Random.Range(0, horizontalMaxCount);
-
+            int horizontalMaxCount = GridDict.Count;
+            int horizontalIndex = Random.Range(0, horizontalMaxCount);
+            List<int> _temp = new List<int>(GridDict.Keys);
+            horizontalResultIndex = _temp[horizontalIndex];
+            Debug.Log("horizontalIndex " +horizontalResultIndex);
+            
             //随机纵
-            int verticalMaxCount = GridDict[horizontalIndex].Count;
-            verticalIndex = Random.Range(0, verticalMaxCount);
-            
+            int verticalMaxCount = GridDict[horizontalResultIndex].Count;
+            int verticalIndex = Random.Range(0, verticalMaxCount);
+            verticalResultIndex = GridDict[horizontalResultIndex][verticalIndex];
+            Debug.Log("verticalIndex " +verticalIndex);
+
             //移除纵列表中数据
-            GridDict[horizontalIndex].Remove(verticalIndex);
-            
+            GridDict[horizontalResultIndex].RemoveAt(verticalIndex);
+
             //检测如果纵列表中物数据 则移除横列表数据
-            if (GridDict[horizontalIndex].Count <= 0)
-                GridDict.Remove(horizontalIndex);
+            if (GridDict[horizontalResultIndex].Count <= 0)
+                GridDict.Remove(horizontalResultIndex);
             return true;
         }
         else
@@ -154,41 +171,190 @@ public static class GameLevelUtility
     /// 检测下层卡牌遮罩
     /// </summary>
     /// <param name="layer">层</param>
-    /// <param name="horizontalIndex"> 横次序 </param>
-    /// <param name="verticalIndex"> 纵次序 </param>
+    /// <param name="horizontalTempIndex"> 横次序 </param>
+    /// <param name="verticalTempIndex"> 纵次序 </param>
     /// <param name="IsCover"> 覆盖还是移除 </param>
-    private static void CheckBottomCardMask(Dictionary<int, GameCardItem[][]> ItemsMapLayerDict, int layer, int horizontalIndex, int verticalIndex, bool IsCover)
+    public static void CheckBottomCardMask( int layer, int horizontalIndex, int verticalIndex, bool IsCover)
     {
         //向下层检索
         int nextLayer = layer - 1;
-        if (ItemsMapLayerDict.TryGetValue(nextLayer, out var maps))
+        if (m_ItemsMapLayerDict.TryGetValue(nextLayer, out var maps))
         {
             if (maps is null)
                 return;
-
-            if (maps[horizontalIndex][verticalIndex] != null)
+            
+            int horizontalTempIndex = horizontalIndex;
+            int verticalTempIndex = verticalIndex;
+            if (maps[horizontalTempIndex][verticalTempIndex] != null)
             {
-                maps[horizontalIndex][verticalIndex].SetMask(IsCover);
-                CheckBottomCardMask(ItemsMapLayerDict, nextLayer, horizontalIndex, verticalIndex, IsCover);
+                if(IsCover || !CheckTopCardMask(nextLayer, horizontalTempIndex, verticalTempIndex))
+                {
+                    maps[horizontalTempIndex][verticalTempIndex].SetMask(IsCover);
+                    CheckBottomCardMask(nextLayer, horizontalTempIndex, verticalTempIndex, IsCover);
+                }
             }
 
-            if (maps[horizontalIndex + 1][verticalIndex] != null)
+            horizontalTempIndex = horizontalIndex + 1;
+            verticalTempIndex = verticalIndex;
+            if (maps[horizontalTempIndex][verticalTempIndex] != null)
             {
-                maps[horizontalIndex + 1][verticalIndex].SetMask(IsCover);
-                CheckBottomCardMask(ItemsMapLayerDict, nextLayer, horizontalIndex + 1, verticalIndex, IsCover);
+                if(IsCover || !CheckTopCardMask(nextLayer, horizontalTempIndex, verticalTempIndex))
+                {
+                    maps[horizontalTempIndex][verticalTempIndex].SetMask(IsCover);
+                    CheckBottomCardMask(nextLayer, horizontalTempIndex, verticalTempIndex, IsCover);
+                }
             }
 
-            if (maps[horizontalIndex][verticalIndex + 1] != null)
+            horizontalTempIndex = horizontalIndex;
+            verticalTempIndex = verticalIndex + 1;
+            if (maps[horizontalTempIndex][verticalTempIndex] != null)
             {
-                maps[horizontalIndex][verticalIndex + 1].SetMask(IsCover);
-                CheckBottomCardMask(ItemsMapLayerDict, nextLayer, horizontalIndex, verticalIndex + 1, IsCover);
+                if(IsCover || !CheckTopCardMask(nextLayer, horizontalTempIndex, verticalTempIndex))
+                {
+                    maps[horizontalTempIndex][verticalTempIndex].SetMask(IsCover);
+                    CheckBottomCardMask(nextLayer, horizontalTempIndex, verticalTempIndex, IsCover);
+                }
             }
 
-            if (maps[horizontalIndex + 1][verticalIndex + 1] != null)
+            horizontalTempIndex = horizontalIndex + 1;
+            verticalTempIndex = verticalIndex + 1;
+            if (maps[horizontalTempIndex][verticalTempIndex] != null)
             {
-                maps[horizontalIndex + 1][verticalIndex + 1].SetMask(IsCover);
-                CheckBottomCardMask(ItemsMapLayerDict, nextLayer, horizontalIndex + 1, verticalIndex + 1, IsCover);
+                if(IsCover || !CheckTopCardMask(nextLayer, horizontalTempIndex, verticalTempIndex))
+                {
+                    maps[horizontalTempIndex][verticalTempIndex].SetMask(IsCover);
+                    CheckBottomCardMask(nextLayer, horizontalTempIndex, verticalTempIndex, IsCover);
+                }
+            }
+            // if (maps[horizontalTempIndex][verticalTempIndex] != null)
+            // {
+            //     if(!IsCover && CheckTopCardMask(nextLayer, horizontalTempIndex, verticalTempIndex))
+            //         return;
+            //     
+            //     maps[horizontalTempIndex][verticalTempIndex].SetMask(IsCover);
+            //     CheckBottomCardMask(nextLayer, horizontalTempIndex, verticalTempIndex, IsCover);
+            // }
+        }
+    }
+    
+    /// <summary>
+    /// 检测顶层是否有卡牌遮罩
+    /// </summary>
+    /// <param name="ItemsMapLayerDict"></param>
+    /// <param name="layer"></param>
+    /// <param name="horizontalIndex"></param>
+    /// <param name="verticalIndex"></param>
+    /// <returns></returns>
+    public static bool CheckTopCardMask(int layer, int horizontalIndex, int verticalIndex)
+    {
+        //向上层检索
+        int nextLayer = layer + 1;
+        if (m_ItemsMapLayerDict.TryGetValue(nextLayer, out var maps))
+        {
+            if(maps is null)
+                return false;
+
+            int horizontalTempIndex = horizontalIndex;
+            int verticalTempIndex = verticalIndex;
+
+            if (horizontalTempIndex >= 0 && verticalTempIndex >= 0 &&
+                horizontalTempIndex < maps.Length && verticalTempIndex < maps[horizontalTempIndex].Length &&
+                maps[horizontalTempIndex][verticalTempIndex] != null)
+            {
+                return true;
+            }
+
+            horizontalTempIndex = horizontalIndex - 1;
+            verticalTempIndex = verticalIndex;
+            if (horizontalTempIndex >= 0 && verticalTempIndex >= 0 &&
+                horizontalTempIndex < maps.Length && verticalTempIndex < maps[horizontalTempIndex].Length &&
+                maps[horizontalTempIndex][verticalTempIndex] != null)
+            {
+                return true;
+            }
+            
+            horizontalTempIndex = horizontalIndex;
+            verticalTempIndex = verticalIndex - 1;
+            if (horizontalTempIndex >= 0 && verticalTempIndex >= 0 &&
+                horizontalTempIndex < maps.Length && verticalTempIndex < maps[horizontalTempIndex].Length &&
+                maps[horizontalTempIndex][verticalTempIndex] != null)
+            {
+                return true;
+            }
+            
+            horizontalTempIndex = horizontalIndex - 1;
+            verticalTempIndex = verticalIndex - 1;
+            if (horizontalTempIndex >= 0 && verticalTempIndex >= 0 &&
+                horizontalTempIndex < maps.Length && verticalTempIndex < maps[horizontalTempIndex].Length &&
+                maps[horizontalTempIndex][verticalTempIndex] != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 设置当前层父级
+    /// </summary>
+    /// <returns></returns>
+    private static void SetRoot(Transform root, int maxSize, int layer)
+    {
+        m_ParentMaps = new GameObject[layer][];
+        for (int i = 0; i < layer; i++)
+        {
+            m_ParentMaps[i] = new GameObject[maxSize];
+            for (int j = 0; j < maxSize; j++)
+            {
+                m_ParentMaps[i][j] = new GameObject();
+                m_ParentMaps[i][j].name = $"Parent_{i}_{j + 1}";
+                m_ParentMaps[i][j].transform.SetParent(root);
+                m_ParentMaps[i][j].transform.position = root.position;
             }
         }
     }
+    
+    /// <summary>
+    /// 获取当前父级
+    /// </summary>
+    /// <param name="layer"></param>
+    /// <param name="vertical"></param>
+    /// <returns></returns>
+    private static Transform GetRoot(int layer, int vertical)
+    {
+        return m_ParentMaps[layer - 1][vertical].transform;
+    }
+    
+    /// <summary>
+    /// 卡牌条目删除操作
+    /// </summary>
+    public static void CardItemDelOperate(int layer, int horizontal, int vertical)
+    {
+        //赋值数据
+        if (m_ItemsMapLayerDict.TryGetValue(layer, out var itemMaps))
+        {
+            itemMaps[horizontal][vertical] = null;
+        }
+        else
+        {
+            //已经移除过了
+            Debug.LogError("已经移除过了");
+        }
+    }
+
+    #region 与背包交互
+
+    public static void CardEnterBag(GameCardItem cardItem)
+    {
+        m_BagItem.AddCard(cardItem);
+    }
+
+    public static void CheckTripleCard(GameCardItem cardItem)
+    {
+        m_BagItem.CheckCardTriple(cardItem);
+    }
+    
+        
+    #endregion
 }

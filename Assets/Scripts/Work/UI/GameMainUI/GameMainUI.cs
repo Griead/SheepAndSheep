@@ -9,17 +9,17 @@ public class GameMainUI : UIBaseView
 
     private Transform m_Root;
 
-    private Dictionary<int, GameCardItem[][]> m_ItemsMapLayerDict;
-
     private GameCardEditorConfig m_EditorConfig;
+
+    private GameCardBagItem m_BagItem;
     private void Awake()
     {
         m_Root = transform.Find("Entity/Root");
+        m_BagItem = transform.Find("Entity/GameCardBagItem").GetComponent<GameCardBagItem>();
     }
 
     private void Start()
     {
-        
     }
     
     public override void Show(object[] parameter)
@@ -29,8 +29,11 @@ public class GameMainUI : UIBaseView
         int level = PlayerSaveUtility.m_SaveData.MaxLevel;
         
         m_EditorConfig = PrototypeUtility.GameCardEditorConfig;
-        m_ItemsMapLayerDict = new Dictionary<int, GameCardItem[][]>();
+        var levelConfig = m_EditorConfig.GetLevelConfig(level);
         
-        GameLevelUtility.CreateGrid(m_Root, m_EditorConfig.GetLevelConfig(level), ref m_ItemsMapLayerDict);
+        //设置背包数据
+        m_BagItem.SetData(levelConfig.MaxBagItemCount);
+        
+        GameLevelUtility.CreateGrid(m_Root, levelConfig, m_BagItem);
     }
 }
