@@ -3,24 +3,55 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameCardItem : MonoBehaviour
 {
+    /// <summary>
+    /// 数据
+    /// </summary>
+    private GameCardConfig m_Config;
+
+    /// <summary>
+    /// 配置
+    /// </summary>
+    private GameCardData m_Data;
+
+    private Image[] m_IconArray;
+
+    private Button m_Button;
+
+    private Transform m_Mask;
+    
     private void Awake()
     {
-        
+        m_IconArray = transform.Find("IconGroup").GetComponentsInChildren<Image>();
+        m_Button = transform.Find("Button").GetComponent<Button>();
+        m_Mask = transform.Find("Mask");
     }
 
     private void Start()
     {
-        
+        m_Button.onClick.AddListener(SendEnterBag);
     }
     
     /// <summary>
     /// 设置数据
     /// </summary>
+    /// <param name="config"></param>
     /// <param name="data"></param>
-    private void SetData(GameCardData data)
+    public void SetData(GameCardConfig config ,GameCardData data)
+    {
+        m_Config = config;
+        m_Data = data;
+
+        for (int i = 0; i < m_IconArray.Length; i++)
+        {
+            m_IconArray[i].enabled = ((int)config.Type == i);
+        }
+    }
+
+    public void Refresh()
     {
         
     }

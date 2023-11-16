@@ -12,9 +12,30 @@ public class GameCardEditorConfig : BaseEditorConfig
     public GameCardEditorConfig()
     {
         GameCardConfigList = new List<GameCardConfig>();
+        GameLevelConfigList = new List<GameLevelConfig>();
     }
     
     public List<GameCardConfig> GameCardConfigList;
+
+    public List<GameLevelConfig> GameLevelConfigList;
+    
+    /// <summary>
+    /// 获取等级配置
+    /// </summary>
+    /// <param name="level"></param>
+    /// <returns></returns>
+    public GameLevelConfig GetLevelConfig(int level)
+    {
+        if (level > GameLevelConfigList.Count)
+        {
+            return GameLevelConfigList[level - 1];
+        }
+        else
+        {
+            Debug.LogError("未找到数据");
+            return null;
+        }
+    }
 }
 
 [Serializable]
@@ -49,6 +70,17 @@ public class GameSpecialTool
 [Serializable]
 public class GameLevelConfig
 {
+    public GameLevelConfig()
+    {
+        ContainCardEnumArray = new GameCardEnum[] { GameCardEnum.Cat, GameCardEnum.Catnip, GameCardEnum.CatBag, GameCardEnum.CatBowl, GameCardEnum.CatFood };
+        ContainSpecialToolEnumArray = new GameSpecialToolEnum[] { };
+
+        BottomMaxSize = 6;
+        LayerSizeArray = new int[] { 30, 21, 9 };
+        MaxBagItemCount = 6;
+        ExtraItemArray = new[] { 6, 6 };
+    }
+    
     /// <summary>
     /// 包含的卡牌类型
     /// </summary>

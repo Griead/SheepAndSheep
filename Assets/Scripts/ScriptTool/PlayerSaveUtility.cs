@@ -10,11 +10,17 @@ public static class PlayerSaveUtility
 
     public static void Init()
     {
-        m_SaveFolderPath = Path.Combine(Application.persistentDataPath, GameDefine.PlayDataSaveFolderPath);
-        m_SaveFilePath = Path.Combine(m_SaveFolderPath, GameDefine.PlayDataSaveFilePath);
+        m_SaveFolderPath = Path.Combine(GetDataPath(), GameDefine.PlayDataSaveFolderPath).Replace("\\", "/");
+        m_SaveFilePath = m_SaveFolderPath + GameDefine.PlayDataSaveFilePath;
         LoadData();
     }
-           
+
+    private static string GetDataPath()
+    {
+        // return Application.persistentDataPath;
+        return Application.streamingAssetsPath;
+    }
+    
     /// <summary>
     /// 更新关卡
     /// </summary>
