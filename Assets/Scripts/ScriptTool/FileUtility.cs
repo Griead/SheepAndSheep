@@ -110,7 +110,6 @@ public static class FileUtility
     /// <returns></returns>
     public static T ReadXmlStringToData<T>(string _content) where T : class
     {
-
         using (StringReader sr = new StringReader(_content))
         {
             XmlSerializer xmldes = new XmlSerializer(typeof(T));
@@ -203,8 +202,9 @@ public static class FileUtility
         File.WriteAllText(_path, _content, Encoding.UTF8);
     }
 
-    public static T ReadFileJson<T>(string _content) where T : class, new()
+    public static T ReadFileJson<T>(string _path) where T : class, new()
     {
+        string _content = File.ReadAllText(@_path, Encoding.UTF8);
         var _setting = new Newtonsoft.Json.JsonSerializerSettings()
         {
             TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All

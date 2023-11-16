@@ -1,4 +1,6 @@
 using System;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class StartMainUI : UIBaseView
@@ -11,14 +13,11 @@ public class StartMainUI : UIBaseView
 
     private Text LevelText;
     
-    private int m_Level;
-    
-    public override void Show(object[] parames)
+    public override void Show(object[] parameter)
     {
-        base.Show(parames);
+        base.Show(parameter);
 
-        // m_Level = PlayerSaveUtility.m_SaveData.MaxLevel;
-        m_Level = 1;
+        var m_Level = PlayerSaveUtility.m_SaveData.MaxLevel;
         LevelText.text = $"当前关卡:第{m_Level}关";
     }
     private void Awake()
@@ -34,6 +33,6 @@ public class StartMainUI : UIBaseView
 
     private void StartGame()
     {
-        UIUtility.LoadUIView<GameMainUI>(UIType.GameMainUI, new object[]{ 1 });
+        UIUtility.LoadUIView<GameMainUI>(UIType.GameMainUI, null);
     }
 }

@@ -11,7 +11,7 @@ using Work;
 public class GameCardConfigEditor : OdinWindowBaseEditor<GameCardEditorConfig>
 {
     protected override string Title => "游戏配置";
-    protected override string PrototypePath => "GameCardConfigEditor.xml";
+    protected override string PrototypePath => "GameCardConfigPrototype.xml";
     
     [MenuItem("Tools/配置/游戏卡牌编辑器")]
     private static void Open()

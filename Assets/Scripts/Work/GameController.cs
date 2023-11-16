@@ -8,7 +8,7 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         GameLevelUtility.Init();
-        // PlayerSaveUtility.Init();
+        PlayerSaveUtility.Init();
         PrototypeUtility.Init();
         UIUtility.Init();
         UIUtility.SetRoot(CanvasRoot);

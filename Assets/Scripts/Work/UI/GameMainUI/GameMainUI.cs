@@ -9,9 +9,9 @@ public class GameMainUI : UIBaseView
 
     private Transform m_Root;
 
-    private Dictionary<int, GameCardItem[][]> m_ItemsMapLayerDict = new Dictionary<int, GameCardItem[][]>() ;
+    private Dictionary<int, GameCardItem[][]> m_ItemsMapLayerDict;
 
-    private GameCardEditorConfig m_EditorConfig = new GameCardEditorConfig();
+    private GameCardEditorConfig m_EditorConfig;
     private void Awake()
     {
         m_Root = transform.Find("Entity/Root");
@@ -19,14 +19,18 @@ public class GameMainUI : UIBaseView
 
     private void Start()
     {
-        // m_EditorConfig = PrototypeUtility.GameCardEditorConfig;
+        
     }
     
-    public override void Show(object[] parames)
+    public override void Show(object[] parameter)
     {
-        base.Show(parames);
-
-        int level = (int)parames[0];
-        GameLevelUtility.CreateGrid(m_Root, new GameLevelConfig(), ref m_ItemsMapLayerDict);
+        base.Show(parameter);
+        
+        int level = PlayerSaveUtility.m_SaveData.MaxLevel;
+        
+        m_EditorConfig = PrototypeUtility.GameCardEditorConfig;
+        m_ItemsMapLayerDict = new Dictionary<int, GameCardItem[][]>();
+        
+        GameLevelUtility.CreateGrid(m_Root, m_EditorConfig.GetLevelConfig(level), ref m_ItemsMapLayerDict);
     }
 }

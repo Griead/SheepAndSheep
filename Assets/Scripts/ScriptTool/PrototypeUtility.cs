@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class PrototypeUtility
 {
-    private static string GameCardEditorConfigPath = "Data/Xml/GameCardConfigEditor";
+    private static string GameCardEditorConfigPath = "Data/Xml/GameCardConfigPrototype";
     public static GameCardEditorConfig GameCardEditorConfig;
 
     public static void Init()

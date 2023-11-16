@@ -34,8 +34,8 @@ public static class UIUtility
     /// 加载视图
     /// </summary>
     /// <param name="type"></param>
-    /// <param name="parames"></param>
-    public static void LoadUIView<T>(UIType type, object[] parames) where T : UIBaseView , new()
+    /// <param name="parameter"></param>
+    public static void LoadUIView<T>(UIType type, object[] parameter) where T : UIBaseView , new()
     {
         if (!UIPathDict.ContainsKey(type))
         {
@@ -49,6 +49,8 @@ public static class UIUtility
             var uIView = gameObject.AddComponent<T>();
             UIBaseDict.Add(type, uIView);
         }
-        UIBaseDict[type].Show(parames);
+        Debug.Log("调用");
+        
+        UIBaseDict[type].Show(parameter);
     }
 }

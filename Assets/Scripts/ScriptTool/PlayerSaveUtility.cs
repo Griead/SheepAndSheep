@@ -45,7 +45,7 @@ public static class PlayerSaveUtility
     /// <summary>
     /// 读取数据
     /// </summary>
-    private static void LoadData()
+    public static void LoadData()
     {
         FileUtility.CreateFileFolder(m_SaveFolderPath);
 

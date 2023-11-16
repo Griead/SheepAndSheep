@@ -10,12 +10,12 @@ public class GameCardItem : MonoBehaviour
     /// <summary>
     /// 数据
     /// </summary>
-    private GameCardConfig m_Config;
+    public GameCardConfig m_Config;
 
     /// <summary>
     /// 配置
     /// </summary>
-    private GameCardData m_Data;
+    public GameCardData m_Data;
 
     private Image[] m_IconArray;
 
@@ -49,6 +49,15 @@ public class GameCardItem : MonoBehaviour
         {
             m_IconArray[i].enabled = ((int)config.Type == i);
         }
+    }
+
+    /// <summary>
+    /// 设置遮罩
+    /// </summary>
+    /// <param name="IsMask"></param>
+    public void SetMask(bool IsMask)
+    {
+        m_Mask.gameObject.SetActive(IsMask);
     }
 
     public void Refresh()

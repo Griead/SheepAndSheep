@@ -26,7 +26,7 @@ public class GameCardEditorConfig : BaseEditorConfig
     /// <returns></returns>
     public GameLevelConfig GetLevelConfig(int level)
     {
-        if (level > GameLevelConfigList.Count)
+        if (level >= GameLevelConfigList.Count)
         {
             return GameLevelConfigList[level - 1];
         }

@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using UnityEngine.Rendering;
 
@@ -44,10 +46,10 @@ public class GameModifierEditor : EditorWindow
         {
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("测试修改器");
-            m_PropID = EditorGUILayout.IntField("物品ID: ", m_PropID);
-            m_CreatPropNum = EditorGUILayout.IntField("生成数量: ", m_CreatPropNum);
+            // m_PropID = EditorGUILayout.IntField("物品ID: ", m_PropID);
+            // m_CreatPropNum = EditorGUILayout.IntField("生成数量: ", m_CreatPropNum);
 
-            if (GUILayout.Button("测试按钮"))
+            if (GUILayout.Button("写入编辑器表"))
             {
                 Debug.Log("测试");
                 
@@ -55,7 +57,11 @@ public class GameModifierEditor : EditorWindow
                 m_Config.GameCardConfigList = new List<GameCardConfig>() { new GameCardConfig() };
                 FileUtility.WriteXmlToFile(GetPrototypePath(), m_Config);
             }
-
+            if (GUILayout.Button("读取编辑器表"))
+            {
+                TextAsset xmlTextAsset = Resources.Load<TextAsset>("Data/Xml/GameCardConfigPrototype");
+                GameCardEditorConfig _config = FileUtility.ReadXmlStringToData<GameCardEditorConfig>(xmlTextAsset.text); 
+            }
 
             EditorGUILayout.EndVertical();
         }
@@ -77,10 +83,15 @@ public class GameModifierEditor : EditorWindow
     
     private string GetPrototypePath()
     {
+        return GetResourcesLoadPath() + ".xml";
+    }
+
+    private string GetResourcesLoadPath()
+    {
         return GetPrototypeRootFile() + PrototypePath;
     }
     
     private string GetRootPath => "Xml/";
     
-    private string PrototypePath => "GameCardConfigPrototype.xml";
+    private string PrototypePath => "GameCardConfigPrototype";
 }
