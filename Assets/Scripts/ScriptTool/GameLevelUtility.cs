@@ -23,6 +23,7 @@ public static class GameLevelUtility
     public static void CreateGrid(Transform root, GameLevelConfig levelConfig, GameCardBagItem bagItem)
     {
         m_BagItem = bagItem;
+        m_CurLevelConfig = levelConfig;
         m_ItemsMapLayerDict = new Dictionary<int, GameCardItem[][]>();
         //准备设置父级数据
         SetRoot(root, levelConfig.BottomMaxSize, levelConfig.LayerSizeArray.Length);   
@@ -145,13 +146,11 @@ public static class GameLevelUtility
             int horizontalIndex = Random.Range(0, horizontalMaxCount);
             List<int> _temp = new List<int>(GridDict.Keys);
             horizontalResultIndex = _temp[horizontalIndex];
-            Debug.Log("horizontalIndex " +horizontalResultIndex);
             
             //随机纵
             int verticalMaxCount = GridDict[horizontalResultIndex].Count;
             int verticalIndex = Random.Range(0, verticalMaxCount);
             verticalResultIndex = GridDict[horizontalResultIndex][verticalIndex];
-            Debug.Log("verticalIndex " +verticalIndex);
 
             //移除纵列表中数据
             GridDict[horizontalResultIndex].RemoveAt(verticalIndex);
@@ -343,6 +342,32 @@ public static class GameLevelUtility
         }
     }
 
+    /// <summary>
+    /// 检测游戏成功
+    /// </summary>
+    public static bool CheckGameSuccess()
+    {
+        foreach (var maps in m_ItemsMapLayerDict.Values)
+        {
+            for (int i = 0; i < maps.Length; i++)
+            {
+                for (int j = 0; j < maps[i].Length; j++)
+                {
+                    if (maps[i][j] != null)
+                        return false;
+                }
+            }
+        }
+        
+        //胜利 打开结束面板
+        UIUtility.LoadUIView<EndMainUI>(UIType.EndMainUI, null);
+        
+        PlayerSaveUtility.UpdateLevel(m_CurLevelConfig.Level);
+        
+        return true;
+    }
+    
+
     #region 与背包交互
 
     public static void CardEnterBag(GameCardItem cardItem)
@@ -354,7 +379,16 @@ public static class GameLevelUtility
     {
         m_BagItem.CheckCardTriple(cardItem);
     }
-    
+
+    public static void ClearBag()
+    {
+        // m_BagItem.ClearBag();
         
+        //胜利 打开结束面板
+        UIUtility.LoadUIView<EndMainUI>(UIType.EndMainUI, null);
+        UIUtility.ReleaseUIView(UIType.GameMainUI);
+        
+        PlayerSaveUtility.UpdateLevel(m_CurLevelConfig.Level + 1);
+    }
     #endregion
 }

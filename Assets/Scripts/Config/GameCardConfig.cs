@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Serialization;
 using Work;
+using Random = UnityEngine.Random;
 
 [Serializable]
 public class GameCardEditorConfig : BaseEditorConfig
@@ -26,14 +27,14 @@ public class GameCardEditorConfig : BaseEditorConfig
     /// <returns></returns>
     public GameLevelConfig GetLevelConfig(int level)
     {
-        if (level >= GameLevelConfigList.Count)
+        if (level < GameLevelConfigList.Count)
         {
             return GameLevelConfigList[level - 1];
         }
         else
         {
-            Debug.LogError("未找到数据");
-            return null;
+            var config = new GameLevelConfig(level);
+            return config;
         }
     }
 }
@@ -80,6 +81,42 @@ public class GameLevelConfig
         MaxBagItemCount = 6;
         ExtraItemArray = new[] { 6, 6 };
     }
+
+    public GameLevelConfig(int level)
+    {
+        //随机元素
+        ContainCardEnumArray = new GameCardEnum[] { GameCardEnum.Cat, GameCardEnum.Catnip, GameCardEnum.CatBag, GameCardEnum.CatBowl, GameCardEnum.CatFood };
+        List<GameCardEnum> EnumList = new List<GameCardEnum>();
+        int enumCount = Random.Range(4, 6);
+        for (int i = 0; i < enumCount; i++)
+        {
+            EnumList.Add(ContainCardEnumArray[Random.Range(0,ContainCardEnumArray.Length)]);
+        }
+        ContainCardEnumArray = EnumList.ToArray();
+        
+        ContainSpecialToolEnumArray = new GameSpecialToolEnum[] { };
+
+        Level = level;
+        BottomMaxSize = Random.Range(6,8);
+
+        List<int> layerSizeList = new List<int>();
+        int layer = Random.Range(3, 6);
+        for (int i = 0; i < layer; i++)
+        {
+            int max =(BottomMaxSize - i) * (BottomMaxSize - i) ;
+            int min = Mathf.FloorToInt(max * 0.8f);
+
+            int randomResult = Random.Range(min, max + 1);
+            layerSizeList.Add(randomResult);
+        }
+        
+        LayerSizeArray = layerSizeList.ToArray();
+        MaxBagItemCount = 6;
+        
+        ExtraItemArray = new[] { 6, 6 };
+    }
+
+    public int Level;
     
     /// <summary>
     /// 包含的卡牌类型

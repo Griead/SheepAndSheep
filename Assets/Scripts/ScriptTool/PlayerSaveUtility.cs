@@ -17,7 +17,11 @@ public static class PlayerSaveUtility
 
     private static string GetDataPath()
     {
-        // return Application.persistentDataPath;
+#if UNITY_EDITOR
+        return Application.streamingAssetsPath;
+#elif UNITY_ANDROID
+        return Application.persistentDataPath;
+#endif
         return Application.streamingAssetsPath;
     }
     
@@ -30,6 +34,7 @@ public static class PlayerSaveUtility
             m_SaveData = new GameLevelData();
         
         m_SaveData.MaxLevel = level;
+        SaveData();
     }
     
     /// <summary>

@@ -13,6 +13,7 @@ public class GameController : MonoBehaviour
         UIUtility.Init();
         UIUtility.SetRoot(CanvasRoot);
     }
+    
 
     private void Start()
     {

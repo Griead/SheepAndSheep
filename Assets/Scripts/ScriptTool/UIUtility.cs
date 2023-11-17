@@ -25,7 +25,7 @@ public static class UIUtility
         CanvasRoot = root;
     }
     
-    private  static Transform GetRoot()
+    public static Transform GetRoot()
     {
         return CanvasRoot;
     }
@@ -49,10 +49,23 @@ public static class UIUtility
             var uIView = gameObject.AddComponent<T>();
             UIBaseDict.Add(type, uIView);
         }
-        Debug.Log("调用");
         
         UIBaseDict[type].Show(parameter);
     }
+
+    /// <summary>
+    /// 释放视图
+    /// </summary>
+    /// <param name="type"></param>
+    public static void ReleaseUIView(UIType type)
+    {
+        if (UIBaseDict.TryGetValue(type, out var view))
+        {
+            UIBaseDict.Remove(type);
+            Object.DestroyImmediate(view.gameObject);
+        }
+    }
+    
 
     public static T GetUIView<T>(UIType type) where T : UIBaseView
     {

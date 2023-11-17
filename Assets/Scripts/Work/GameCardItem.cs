@@ -26,6 +26,8 @@ public class GameCardItem : MonoBehaviour
     private Transform m_Mask;
 
     private TweenerCore<Vector3, Vector3, VectorOptions> m_ScalseTween;
+
+    private bool m_Freeze;
     
     private void Awake()
     {
@@ -53,6 +55,8 @@ public class GameCardItem : MonoBehaviour
         {
             m_IconArray[i].enabled = ((int)config.Type == i);
         }
+
+        m_Freeze = false;
     }
 
     /// <summary>
@@ -74,6 +78,9 @@ public class GameCardItem : MonoBehaviour
     /// </summary>
     private void SendEnterBag()
     {
+        if(m_Freeze)
+            return;
+        
         GameLevelUtility.CardEnterBag(this);
     }
 
@@ -82,21 +89,18 @@ public class GameCardItem : MonoBehaviour
     /// </summary>
     public void ReceiveBag(Vector2 aimPos)
     {
+        m_Freeze = true;
         GameLevelUtility.CardItemDelOperate(m_Data.Layer, m_Data.Horizontal, m_Data.Vertical);
         GameLevelUtility.CheckBottomCardMask(m_Data.Layer, m_Data.Horizontal, m_Data.Vertical, false);
         
         transform.DOLocalMove(aimPos, 0.2f).SetEase(Ease.Linear).OnComplete(() =>
         {
-            SendBagCheckTriple();
+            //检测是否胜利
+            GameLevelUtility.CheckGameSuccess();
+            
+            //发送背包检测三连
+            GameLevelUtility.CheckTripleCard(this);
         });
-    }
-
-    /// <summary>
-    /// 发送背包检测三连
-    /// </summary>
-    private void SendBagCheckTriple()
-    {
-        GameLevelUtility.CheckTripleCard(this);
     }
 
     /// <summary>

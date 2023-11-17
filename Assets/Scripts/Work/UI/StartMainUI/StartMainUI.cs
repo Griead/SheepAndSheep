@@ -17,8 +17,8 @@ public class StartMainUI : UIBaseView
     {
         base.Show(parameter);
 
-        var m_Level = PlayerSaveUtility.m_SaveData.MaxLevel;
-        LevelText.text = $"当前关卡:第{m_Level}关";
+        var level = PlayerSaveUtility.m_SaveData.MaxLevel;
+        LevelText.text = $"当前关卡:第{level}关";
     }
     private void Awake()
     {
@@ -33,6 +33,8 @@ public class StartMainUI : UIBaseView
 
     private void StartGame()
     {
-        UIUtility.LoadUIView<GameMainUI>(UIType.GameMainUI, null);
+        var level = PlayerSaveUtility.m_SaveData.MaxLevel;
+        UIUtility.LoadUIView<GameMainUI>(UIType.GameMainUI, new object[] {level});
+        UIUtility.ReleaseUIView(UIType.StartMainUI);
     }
 }

@@ -70,19 +70,16 @@ public class GameCardBagItem :MonoBehaviour
                         BagItemArray[cardItemLiat[j]].ReceiveTriple();
                         BagItemArray[cardItemLiat[j]] = null;
                     }
-                    
-                    // 整理卡牌数组，将后边的卡牌依次前移
-                    int emptyIndex = cardItemLiat[0];
-                    for (int k = cardItemLiat[2] + 1; k < BagItemArray.Length; k++)
+
+                    int point = cardItemLiat[0];
+                    for (int j = point; j < BagItemArray.Length; j++)
                     {
-                        if (BagItemArray[k] != null)
+                        if (BagItemArray[j] != null)
                         {
-                            BagItemArray[emptyIndex++] = BagItemArray[k];
-                            
-                            BagItemArray[k] = null;
-                            
-                            if(BagItemArray[emptyIndex] != null)
-                                BagItemArray[emptyIndex].GetComponent<RectTransform>().DOLocalMove(GetIndexPos(emptyIndex), 0.3f);
+                            BagItemArray[point] = BagItemArray[j];
+                            BagItemArray[j] = null;
+                            BagItemArray[point].GetComponent<RectTransform>().DOLocalMove(GetIndexPos(point), 0.3f);
+                            point++;
                         }
                     }
                 
@@ -152,6 +149,18 @@ public class GameCardBagItem :MonoBehaviour
         Vector2 curVector2 = new Vector2(firstVector2.x + Index * GameDefine.GameCardItemSize, firstVector2.y);
         
         return curVector2;
+    }
+
+    public void ClearBag()
+    {
+        for (int i = 0; i < BagItemArray.Length; i++)
+        {
+            if(BagItemArray[i] is null)
+                continue;
+            
+            BagItemArray[i].ReceiveTriple();
+            BagItemArray[i] = null;
+        }
     }
     
 }

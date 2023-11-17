@@ -204,7 +204,7 @@ public static class FileUtility
 
     public static T ReadFileJson<T>(string _path) where T : class, new()
     {
-        string _content = File.ReadAllText(@_path, Encoding.UTF8);
+        string _content = File.ReadAllText(_path, Encoding.UTF8);
         var _setting = new Newtonsoft.Json.JsonSerializerSettings()
         {
             TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All
