@@ -64,6 +64,9 @@ public class GameCardBagItem :MonoBehaviour
                 
                 if (cardItemLiat.Count >= 3)
                 {
+                    //音效
+                    AudioManager.Instance.PlaySound(GameDefine.Audio_Triple);
+                    
                     //处理 这三张卡牌
                     for (int j = 0; j < cardItemLiat.Count; j++)
                     {
@@ -153,6 +156,9 @@ public class GameCardBagItem :MonoBehaviour
 
     public void ClearBag()
     {
+        //音效
+        AudioManager.Instance.PlaySound(GameDefine.Audio_Triple);
+        
         for (int i = 0; i < BagItemArray.Length; i++)
         {
             if(BagItemArray[i] is null)

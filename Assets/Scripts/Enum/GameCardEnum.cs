@@ -4,15 +4,17 @@ namespace Work
 {
     public enum GameCardEnum
     {
-        [LabelText("猫包")]
-        CatBag,
-        [LabelText("猫包")]
-        Cat,
-        [LabelText("猫碗")]
-        CatBowl,        
-        [LabelText("猫粮")]
-        CatFood,
-        [LabelText("猫草")]
-        Catnip,
+        CardType1,
+        CardType2,
+        CardType3,        
+        CardType4,
+        CardType5,
+        CardType6,
+        CardType7,
+        CardType8,
+        CardType9,
+        CardType10,
+        CardType11,
+        CardType12,
     }
 }

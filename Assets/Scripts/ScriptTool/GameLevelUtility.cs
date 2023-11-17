@@ -361,8 +361,9 @@ public static class GameLevelUtility
         
         //胜利 打开结束面板
         UIUtility.LoadUIView<EndMainUI>(UIType.EndMainUI, null);
+        UIUtility.ReleaseUIView(UIType.GameMainUI);
         
-        PlayerSaveUtility.UpdateLevel(m_CurLevelConfig.Level);
+        PlayerSaveUtility.UpdateLevel(m_CurLevelConfig.Level + 1);
         
         return true;
     }
@@ -382,13 +383,7 @@ public static class GameLevelUtility
 
     public static void ClearBag()
     {
-        // m_BagItem.ClearBag();
-        
-        //胜利 打开结束面板
-        UIUtility.LoadUIView<EndMainUI>(UIType.EndMainUI, null);
-        UIUtility.ReleaseUIView(UIType.GameMainUI);
-        
-        PlayerSaveUtility.UpdateLevel(m_CurLevelConfig.Level + 1);
+        m_BagItem.ClearBag();
     }
     #endregion
 }

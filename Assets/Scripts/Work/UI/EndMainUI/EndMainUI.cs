@@ -30,6 +30,9 @@ public class EndMainUI : UIBaseView
 
     private void NextLevel()
     {
+        //音效
+        AudioManager.Instance.PlaySound(GameDefine.Audio_TabClick);
+        
         int level = PlayerSaveUtility.m_SaveData.MaxLevel;
         // var config = PrototypeUtility.GameCardEditorConfig.GetLevelConfig(level + 1);
         UIUtility.ReleaseUIView(UIType.EndMainUI);

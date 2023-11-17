@@ -2,24 +2,25 @@
 <GameCardEditorConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <GameCardConfigList>
     <GameCardConfig>
-      <Type>CatBag</Type>
+      <Type>CardType1</Type>
     </GameCardConfig>
   </GameCardConfigList>
   <GameLevelConfigList>
     <GameLevelConfig>
+      <Level>1</Level>
       <ContainCardEnumArray>
-        <GameCardEnum>Cat</GameCardEnum>
-        <GameCardEnum>Catnip</GameCardEnum>
-        <GameCardEnum>CatBag</GameCardEnum>
-        <GameCardEnum>CatBowl</GameCardEnum>
-        <GameCardEnum>CatFood</GameCardEnum>
+        <GameCardEnum>CardType2</GameCardEnum>
+        <GameCardEnum>CardType5</GameCardEnum>
+        <GameCardEnum>CardType1</GameCardEnum>
+        <GameCardEnum>CardType3</GameCardEnum>
+        <GameCardEnum>CardType4</GameCardEnum>
       </ContainCardEnumArray>
       <ContainSpecialToolEnumArray />
       <BottomMaxSize>6</BottomMaxSize>
       <LayerSizeArray>
         <int>30</int>
-        <int>20</int>
-        <int>10</int>
+        <int>21</int>
+        <int>9</int>
       </LayerSizeArray>
       <MaxBagItemCount>6</MaxBagItemCount>
       <ExtraItemArray>

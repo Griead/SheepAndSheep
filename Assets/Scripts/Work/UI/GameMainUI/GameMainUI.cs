@@ -115,6 +115,9 @@ public class GameMainUI : UIBaseView
 
     private void ClearBag()
     {
+        //音效
+        AudioManager.Instance.PlaySound(GameDefine.Audio_TabClick);
+        
         GameLevelUtility.ClearBag();
     }
 }

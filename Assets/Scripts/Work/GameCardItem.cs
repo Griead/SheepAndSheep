@@ -65,7 +65,17 @@ public class GameCardItem : MonoBehaviour
     /// <param name="IsMask"></param>
     public void SetMask(bool IsMask)
     {
-        m_Mask.gameObject.SetActive(IsMask);
+        if (!IsMask)
+        {
+            m_Mask.GetComponent<Image>().DOFade(IsMask ? 0.5f : 0, 0.5f).SetEase(Ease.Linear).OnComplete(() =>
+            {
+                m_Mask.gameObject.SetActive(IsMask);
+            });
+        }
+        else
+        {
+            m_Mask.gameObject.SetActive(IsMask);
+        }
     }
 
     public void Refresh()
@@ -80,6 +90,9 @@ public class GameCardItem : MonoBehaviour
     {
         if(m_Freeze)
             return;
+        
+        //音效
+        AudioManager.Instance.PlaySound(GameDefine.Audio_ItemClick);
         
         GameLevelUtility.CardEnterBag(this);
     }

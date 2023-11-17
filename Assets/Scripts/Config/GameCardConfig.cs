@@ -73,7 +73,7 @@ public class GameLevelConfig
 {
     public GameLevelConfig()
     {
-        ContainCardEnumArray = new GameCardEnum[] { GameCardEnum.Cat, GameCardEnum.Catnip, GameCardEnum.CatBag, GameCardEnum.CatBowl, GameCardEnum.CatFood };
+        ContainCardEnumArray = new GameCardEnum[] { GameCardEnum.CardType2, GameCardEnum.CardType5, GameCardEnum.CardType1, GameCardEnum.CardType3, GameCardEnum.CardType4 };
         ContainSpecialToolEnumArray = new GameSpecialToolEnum[] { };
 
         BottomMaxSize = 6;
@@ -85,12 +85,14 @@ public class GameLevelConfig
     public GameLevelConfig(int level)
     {
         //随机元素
-        ContainCardEnumArray = new GameCardEnum[] { GameCardEnum.Cat, GameCardEnum.Catnip, GameCardEnum.CatBag, GameCardEnum.CatBowl, GameCardEnum.CatFood };
+        List<GameCardEnum> _TempEnumList = new List<GameCardEnum>() { GameCardEnum.CardType1, GameCardEnum.CardType2, GameCardEnum.CardType3, GameCardEnum.CardType4, GameCardEnum.CardType5, GameCardEnum.CardType6, GameCardEnum.CardType7, GameCardEnum.CardType8, GameCardEnum.CardType9, GameCardEnum.CardType10, GameCardEnum.CardType11, GameCardEnum.CardType12,};
         List<GameCardEnum> EnumList = new List<GameCardEnum>();
-        int enumCount = Random.Range(4, 6);
+        int enumCount = Random.Range(5, 9);
         for (int i = 0; i < enumCount; i++)
         {
-            EnumList.Add(ContainCardEnumArray[Random.Range(0,ContainCardEnumArray.Length)]);
+            int _index = Random.Range(0, _TempEnumList.Count);
+            EnumList.Add(_TempEnumList[_index]);
+            _TempEnumList.RemoveAt(_index);
         }
         ContainCardEnumArray = EnumList.ToArray();
         

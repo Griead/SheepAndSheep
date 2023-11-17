@@ -17,6 +17,9 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
+        //背景音乐
+        AudioManager.Instance.PlayBackgroundMusic(GameDefine.BackGroupMusic_Triple);
+        
         UIUtility.LoadUIView<StartMainUI>(UIType.StartMainUI, null);
     }
 }
