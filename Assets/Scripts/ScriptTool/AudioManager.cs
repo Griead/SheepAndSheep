@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AudioManager :MonoBehaviour
@@ -8,6 +9,8 @@ public class AudioManager :MonoBehaviour
     private AudioSource m_SoundEffectAudioSource;
     private AudioSource m_BackGroundEffectAudioSource;
 
+    private Dictionary<string, AudioClip> m_AudioClipDict;
+    
     private void Awake()
     {
         if (Instance == null)
@@ -17,6 +20,7 @@ public class AudioManager :MonoBehaviour
             m_BackGroundEffectAudioSource = gameObject.AddComponent<AudioSource>();
             m_BackGroundEffectAudioSource.volume = 0.2f;
             m_BackGroundEffectAudioSource.loop = true;
+            m_AudioClipDict = new Dictionary<string, AudioClip>();
         }
         else
         {
@@ -24,9 +28,25 @@ public class AudioManager :MonoBehaviour
         }
     }
 
+    private AudioClip GetAudioClip(string soundPath)
+    {
+        AudioClip audioClip = null;
+        if (!m_AudioClipDict.ContainsKey(soundPath))
+        {
+            audioClip = Resources.Load<AudioClip>(soundPath);
+            m_AudioClipDict.Add(soundPath, audioClip);
+        }
+        else
+        {
+            audioClip = m_AudioClipDict[soundPath];
+        }
+
+        return audioClip;
+    }
+
     public void PlaySound(string soundPath)
     {
-        AudioClip audioClip = Resources.Load<AudioClip>(soundPath);
+        var audioClip = GetAudioClip(soundPath);
 
         if (audioClip != null)
         {
@@ -36,7 +56,7 @@ public class AudioManager :MonoBehaviour
     
     public void PlayBackgroundMusic(string musicPath)
     {
-        AudioClip audioClip = Resources.Load<AudioClip>(musicPath);
+        var audioClip = GetAudioClip(musicPath);
 
         if (audioClip != null)
         {

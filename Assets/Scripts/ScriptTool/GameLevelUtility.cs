@@ -388,12 +388,12 @@ public static class GameLevelUtility
             }
         }
         
+        //更新关卡数据
+        PlayerSaveUtility.UpdateLevel(m_CurLevelConfig.Level + 1);
+        
         //胜利 打开结束面板
         UIUtility.LoadUIView<EndMainUI>(UIType.EndMainUI, null);
         UIUtility.ReleaseUIView(UIType.GameMainUI);
-        
-        PlayerSaveUtility.UpdateLevel(m_CurLevelConfig.Level + 1);
-        
         return true;
     }
     
