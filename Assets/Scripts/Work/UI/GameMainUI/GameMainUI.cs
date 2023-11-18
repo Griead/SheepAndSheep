@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using DG.Tweening;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
@@ -12,6 +11,8 @@ public class GameMainUI : UIBaseView
     protected override string LoadPath => "";
 
     private Transform m_Root;
+
+    private Transform[] m_ExtraRootArray;
 
     private GameCardEditorConfig m_EditorConfig;
 
@@ -33,6 +34,12 @@ public class GameMainUI : UIBaseView
     private void Init()
     {
         m_Root = transform.Find("Entity/Root");
+        
+        var _extraRoot = transform.Find("Entity/ExtraRoot");
+        m_ExtraRootArray = new Transform[_extraRoot.childCount];
+        for (int i = 0; i < _extraRoot.childCount; i++)
+            m_ExtraRootArray[i] = _extraRoot.GetChild(i);
+        
         m_BagItem = transform.Find("Entity/GameCardBagItem").GetComponent<GameCardBagItem>();
         m_EffectRoot = transform.Find("Entity/EffectRoot").GetComponent<RectTransform>();
         m_CloudBtn = transform.Find("Entity/Cloud").GetComponent<UnityEngine.UI.Button>();
@@ -63,7 +70,7 @@ public class GameMainUI : UIBaseView
         //设置背包数据
         m_BagItem.SetData(levelConfig.MaxBagItemCount);
         
-        GameLevelUtility.CreateGrid(m_Root, levelConfig, m_BagItem);
+        GameLevelUtility.CreateGrid(m_Root, m_ExtraRootArray, levelConfig, m_BagItem);
     }
 
     private float duringTime = 0;
@@ -80,8 +87,8 @@ public class GameMainUI : UIBaseView
     private void SetEffect()
     {
         //雪-----------------
-        float minX = -540f;
-        float maxX = 540f;
+        float minX = - UIUtility.GetRoot().GetComponent<RectTransform>().sizeDelta.x / 2f;
+        float maxX = UIUtility.GetRoot().GetComponent<RectTransform>().sizeDelta.x / 2f;
         float fallDuration = 50f;
 
         //初始
@@ -104,19 +111,20 @@ public class GameMainUI : UIBaseView
         float randomDuration = Random.Range(fallDuration * 0.8f, fallDuration * 1.2f);
 
         //随机位置
-        int randomY = Random.Range(-1400, -2400);
-        float endY = snowflake.GetComponent<RectTransform>().anchoredPosition.y + randomY;
-        
+        int maxY = Mathf.FloorToInt(UIUtility.GetRoot().GetComponent<RectTransform>().sizeDelta.y);
+        int randomY = Random.Range(-maxY + 1000, -maxY);
+        float endY = randomY;
+
         // 下落动画使用DOTween
         snowflake.transform.DOLocalMoveY(endY, randomDuration)
             .SetEase(Ease.Linear)
-            .OnComplete(() => { Destroy(snowflake); });
+            .OnComplete(() => { canvasGroup.DOFade(0, 0.5f).OnComplete(() => { Destroy(snowflake); }); });
     }
 
     private void ClearBag()
     {
         //音效
-        AudioManager.Instance.PlaySound(GameDefine.Audio_TabClick);
+        AudioManager.Instance.PlaySound(GameDefine.UIAudio_TabClick);
         
         GameLevelUtility.ClearBag();
     }

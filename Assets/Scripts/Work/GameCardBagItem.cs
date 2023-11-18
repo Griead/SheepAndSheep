@@ -4,26 +4,48 @@ using System.Numerics;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Vector2 = UnityEngine.Vector2;
 
 public class GameCardBagItem :MonoBehaviour
 {
     private Transform Root;
-    
-    /// <summary>
-    /// 格子数量
-    /// </summary>
-    private int GridCount;
 
+    private Text BagCountText;
+
+    /// <summary>
+    /// 格子内容
+    /// </summary>
     private GameCardItem[] BagItemArray;
+    
     private void Awake()
     {
         Root = transform.Find("Root");
+        BagCountText = transform.Find("BagCountText").GetComponent<Text>();
     }
 
     public void SetData(int gridCount)
     {
         BagItemArray = new GameCardItem[gridCount];
+        RefreshBagCountShow();
+    }
+    
+    /// <summary>
+    /// 刷新背包数量显示
+    /// </summary>
+    private void RefreshBagCountShow()
+    {
+        int curCount = 0;
+        int arrayLength = BagItemArray.Length;
+        for (int i = 0; i < arrayLength; i++)
+        {
+            if (BagItemArray[i] != null)
+            {
+                curCount++;
+            }
+        }
+
+        BagCountText.text = $"{curCount}/{arrayLength}";
     }
 
     /// <summary>
@@ -48,6 +70,8 @@ public class GameCardBagItem :MonoBehaviour
         cardItem.transform.SetParent(Root);
         int Index = FindCardBagItemIndex(cardItem);
         cardItem.ReceiveBag(GetIndexPos(Index));
+
+        RefreshBagCountShow();
     }
     
     /// <summary>
@@ -65,7 +89,7 @@ public class GameCardBagItem :MonoBehaviour
                 if (cardItemLiat.Count >= 3)
                 {
                     //音效
-                    AudioManager.Instance.PlaySound(GameDefine.Audio_Triple);
+                    AudioManager.Instance.PlaySound(GameDefine.UIAudio_Triple);
                     
                     //处理 这三张卡牌
                     for (int j = 0; j < cardItemLiat.Count; j++)
@@ -85,7 +109,8 @@ public class GameCardBagItem :MonoBehaviour
                             point++;
                         }
                     }
-                
+                    
+                    RefreshBagCountShow();
                     break;
                 }
             }
@@ -157,7 +182,7 @@ public class GameCardBagItem :MonoBehaviour
     public void ClearBag()
     {
         //音效
-        AudioManager.Instance.PlaySound(GameDefine.Audio_Triple);
+        AudioManager.Instance.PlaySound(GameDefine.UIAudio_Triple);
         
         for (int i = 0; i < BagItemArray.Length; i++)
         {

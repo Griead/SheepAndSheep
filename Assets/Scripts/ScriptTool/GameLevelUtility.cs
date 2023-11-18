@@ -11,6 +11,8 @@ public static class GameLevelUtility
     private static GameObject[][] m_ParentMaps;
 
     private static GameCardBagItem m_BagItem;
+
+    private static Stack<GameCardItem>[] m_ExtraStackMaps;
     
     public static void Init()
     {
@@ -20,7 +22,7 @@ public static class GameLevelUtility
     /// <summary>
     /// 首先生成格子
     /// </summary>
-    public static void CreateGrid(Transform root, GameLevelConfig levelConfig, GameCardBagItem bagItem)
+    public static void CreateGrid(Transform root, Transform[] extraRootArray, GameLevelConfig levelConfig, GameCardBagItem bagItem)
     {
         m_BagItem = bagItem;
         m_CurLevelConfig = levelConfig;
@@ -87,37 +89,26 @@ public static class GameLevelUtility
                     break;
                 }
             }
+        }
+
+        int extraItemListCount = levelConfig.ExtraItemArray.Length;
+        m_ExtraStackMaps = new Stack<GameCardItem>[extraItemListCount];
+        for (int i = 0; i < levelConfig.ExtraItemArray.Length; i++)
+        {
+            int extraIndex = i;
+            m_ExtraStackMaps[extraIndex] = new Stack<GameCardItem>();
+            for (int j = 0; j < levelConfig.ExtraItemArray[i]; j++)
+            {
+                var go = Object.Instantiate(m_CardModel, extraRootArray[extraIndex]);
+                go.name = $"Item_Extra{extraIndex}_{j}";
+                go.GetComponent<RectTransform>().anchoredPosition = CalculateCardExtraLocation(extraRootArray[extraIndex], extraIndex, j);
+                var gameCardItem = go.AddComponent<GameCardItem>();
+                m_ExtraStackMaps[extraIndex].Push(gameCardItem);
+                gameCardItem.SetExtraData(RandomCardItem(levelConfig.ContainCardEnumArray), extraIndex);
+                ExtraCheckBottomCardMask(extraIndex, true);
+            }
             
-            // //首先生成第一层
-            // for (int i = 0; i < curLayerMaxSize; i++)
-            // {
-            //     for (int j = 0; j < curLayerMaxSize; j++)
-            //     {
-            //         int layer = n + 1;
-            //         int horizontal = i;
-            //         int vertical = j;
-            //         
-            //         var go = Object.Instantiate(m_CardModel, root);
-            //         go.GetComponent<RectTransform>().anchoredPosition = CalculateCardLocation(leftTop, horizontal, vertical);
-            //         var gameCardItem = go.AddComponent<GameCardItem>();
-            //         gameCardItem.SetData(RandomCardItem(levelConfig.ContainCardEnumArray), new GameCardData() {Layer = layer,Horizontal = horizontal, Vertical = vertical} );
-            //
-            //         if (ItemsMapLayerDict.TryGetValue(layer, out var itemMaps))
-            //         {
-            //             itemMaps[horizontal][vertical] = gameCardItem;
-            //         }
-            //         else
-            //         {
-            //             var newLayerMap = new GameCardItem[levelConfig.BottomMaxSize][];
-            //             for (int x = 0; x < levelConfig.BottomMaxSize; x++)
-            //             {
-            //                 newLayerMap[x] = new GameCardItem[levelConfig.BottomMaxSize];
-            //             }
-            //             newLayerMap[horizontal][vertical] = gameCardItem;
-            //             ItemsMapLayerDict.Add(layer, newLayerMap);
-            //         }
-            //     }
-            // }
+            ExtraCheckBottomCardMask(extraIndex, false);
         }
     }
 
@@ -126,6 +117,27 @@ public static class GameLevelUtility
         return new Vector2(leftTop.x + horizontal * GameDefine.GameCardItemSize,
             leftTop.y - vertical * GameDefine.GameCardItemSize);
     }
+    
+    private static Vector3 CalculateCardExtraLocation(Transform root, int listIndex, int Index)
+    {
+        if (listIndex == 0)
+        {
+            //左边
+            return new Vector2(root.GetComponent<RectTransform>().anchoredPosition.x + Index * GameDefine.GameCardItemSize * 0.3f,
+                root.GetComponent<RectTransform>().anchoredPosition.y); //root.GetComponent<RectTransform>().anchoredPosition.y - Index * GameDefine.GameCardItemSize * 0.1f
+        }
+        else if(listIndex == 1)
+        {
+            //右边
+            return new Vector2(root.GetComponent<RectTransform>().anchoredPosition.x - Index * GameDefine.GameCardItemSize * 0.3f,
+                root.GetComponent<RectTransform>().anchoredPosition.y);
+        }
+        else
+        {
+            return Vector3.zero;
+        }
+    }
+    
 
     private static GameCardConfig RandomCardItem(GameCardEnum[] array)
     {
@@ -225,14 +237,6 @@ public static class GameLevelUtility
                     CheckBottomCardMask(nextLayer, horizontalTempIndex, verticalTempIndex, IsCover);
                 }
             }
-            // if (maps[horizontalTempIndex][verticalTempIndex] != null)
-            // {
-            //     if(!IsCover && CheckTopCardMask(nextLayer, horizontalTempIndex, verticalTempIndex))
-            //         return;
-            //     
-            //     maps[horizontalTempIndex][verticalTempIndex].SetMask(IsCover);
-            //     CheckBottomCardMask(nextLayer, horizontalTempIndex, verticalTempIndex, IsCover);
-            // }
         }
     }
     
@@ -293,6 +297,14 @@ public static class GameLevelUtility
 
         return false;
     }
+    
+    public static void ExtraCheckBottomCardMask(int extraIndex, bool IsCover)
+    {
+        if (m_ExtraStackMaps[extraIndex] != null && m_ExtraStackMaps[extraIndex].Count > 0)
+        {
+            m_ExtraStackMaps[extraIndex].Peek().SetMask(IsCover);
+        }
+    }
 
     /// <summary>
     /// 设置当前层父级
@@ -342,6 +354,14 @@ public static class GameLevelUtility
         }
     }
 
+    public static void ExtraCardItemDelOperate(int extraIndex)
+    {
+        if (m_ExtraStackMaps[extraIndex] != null && m_ExtraStackMaps[extraIndex].Count > 0)
+        {
+            m_ExtraStackMaps[extraIndex].Pop();
+        }
+    }
+
     /// <summary>
     /// 检测游戏成功
     /// </summary>
@@ -356,6 +376,15 @@ public static class GameLevelUtility
                     if (maps[i][j] != null)
                         return false;
                 }
+            }
+        }
+
+        int extraMapsLength = m_ExtraStackMaps.Length;
+        for (int i = 0; i < extraMapsLength; i++)
+        {
+            if (m_ExtraStackMaps[i].Count > 0)
+            {
+                return false;
             }
         }
         

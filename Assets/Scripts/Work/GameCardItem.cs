@@ -18,6 +18,11 @@ public class GameCardItem : MonoBehaviour
     /// 配置
     /// </summary>
     public GameCardData m_Data;
+    
+    /// <summary>
+    /// 额外的卡牌列表序号
+    /// </summary>
+    public int m_ExtraIndex;
 
     private Image[] m_IconArray;
 
@@ -28,6 +33,10 @@ public class GameCardItem : MonoBehaviour
     private TweenerCore<Vector3, Vector3, VectorOptions> m_ScalseTween;
 
     private bool m_Freeze;
+
+    private bool m_ExtraMark;
+
+    private Action m_ClickAction;
     
     private void Awake()
     {
@@ -38,7 +47,10 @@ public class GameCardItem : MonoBehaviour
 
     private void Start()
     {
-        m_Button.onClick.AddListener(SendEnterBag);
+        m_Button.onClick.AddListener( ()=>
+        {
+            m_ClickAction?.Invoke();
+        });
     }
     
     /// <summary>
@@ -50,12 +62,29 @@ public class GameCardItem : MonoBehaviour
     {
         m_Config = config;
         m_Data = data;
+        m_ClickAction = SendEnterBag;
+        m_ExtraMark = false;
 
         for (int i = 0; i < m_IconArray.Length; i++)
         {
             m_IconArray[i].enabled = ((int)config.Type == i);
         }
 
+        m_Freeze = false;
+    }
+
+    public void SetExtraData(GameCardConfig config, int extraIndex)
+    {
+        m_Config = config;
+        m_ExtraIndex = extraIndex;
+        m_ClickAction = SendEnterBag;
+        m_ExtraMark = true;
+        
+        for (int i = 0; i < m_IconArray.Length; i++)
+        {
+            m_IconArray[i].enabled = ((int)config.Type == i);
+        }
+        
         m_Freeze = false;
     }
 
@@ -92,7 +121,7 @@ public class GameCardItem : MonoBehaviour
             return;
         
         //音效
-        AudioManager.Instance.PlaySound(GameDefine.Audio_ItemClick);
+        AudioManager.Instance.PlaySound(GameDefine.UIAudio_ItemClick);
         
         GameLevelUtility.CardEnterBag(this);
     }
@@ -103,8 +132,18 @@ public class GameCardItem : MonoBehaviour
     public void ReceiveBag(Vector2 aimPos)
     {
         m_Freeze = true;
-        GameLevelUtility.CardItemDelOperate(m_Data.Layer, m_Data.Horizontal, m_Data.Vertical);
-        GameLevelUtility.CheckBottomCardMask(m_Data.Layer, m_Data.Horizontal, m_Data.Vertical, false);
+
+        if (m_ExtraMark)
+        {
+            GameLevelUtility.ExtraCardItemDelOperate(m_ExtraIndex);
+            GameLevelUtility.ExtraCheckBottomCardMask(m_ExtraIndex, false);
+        }
+        else
+        {
+            GameLevelUtility.CardItemDelOperate(m_Data.Layer, m_Data.Horizontal, m_Data.Vertical);
+            GameLevelUtility.CheckBottomCardMask(m_Data.Layer, m_Data.Horizontal, m_Data.Vertical, false);
+        }
+
         
         transform.DOLocalMove(aimPos, 0.2f).SetEase(Ease.Linear).OnComplete(() =>
         {

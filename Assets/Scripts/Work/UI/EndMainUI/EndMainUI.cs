@@ -26,12 +26,14 @@ public class EndMainUI : UIBaseView
         base.Show(parameter);
         int level = PlayerSaveUtility.m_SaveData.MaxLevel;
         m_NextLevelText.text =$"第{level}关";
+        
+        AudioManager.Instance.PlaySound(GameDefine.UIAudio_Success);
     }
 
     private void NextLevel()
     {
         //音效
-        AudioManager.Instance.PlaySound(GameDefine.Audio_TabClick);
+        AudioManager.Instance.PlaySound(GameDefine.UIAudio_TabClick);
         
         int level = PlayerSaveUtility.m_SaveData.MaxLevel;
         // var config = PrototypeUtility.GameCardEditorConfig.GetLevelConfig(level + 1);

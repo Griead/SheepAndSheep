@@ -3,13 +3,22 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using Sirenix.OdinInspector;
 using Random = UnityEngine.Random;
 
 public class ImageShake : MonoBehaviour
 {
     private Image m_Image;
-    private float m_ShakeDuration = 0.5f;
-    private float m_ShakeInterval = 2f;
+    [LabelText("抖动范围")]
+    public float m_ShakeDuration = 0.5f;
+    [LabelText("抖动间隔")]
+    public float m_ShakeInterval = 2f;
+    [LabelText("抖动强度")]
+    public float m_ShakeStrength = 5;
+    [LabelText("抖动幅度")]
+    public float m_ShakeVibrato = 20;
+    [LabelText("抖动随机程度")]
+    public float m_ShakeRandomness = 0;
 
     private void Awake()
     {

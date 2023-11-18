@@ -34,7 +34,7 @@ public class StartMainUI : UIBaseView
     private void StartGame()
     {
         //音效
-        AudioManager.Instance.PlaySound(GameDefine.Audio_TabClick);
+        AudioManager.Instance.PlaySound(GameDefine.UIAudio_TabClick);
         
         var level = PlayerSaveUtility.m_SaveData.MaxLevel;
         UIUtility.LoadUIView<GameMainUI>(UIType.GameMainUI, new object[] {level});
