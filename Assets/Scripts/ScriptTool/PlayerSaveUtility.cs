@@ -19,7 +19,7 @@ public static class PlayerSaveUtility
     {
 #if UNITY_EDITOR
         return Application.streamingAssetsPath;
-#elif UNITY_ANDROID
+#elif UNITY_ANDROID || UNITY_IOS
         return Application.persistentDataPath;
 #endif
         return Application.streamingAssetsPath;

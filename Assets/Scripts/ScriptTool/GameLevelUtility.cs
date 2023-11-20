@@ -28,7 +28,11 @@ public static class GameLevelUtility
         m_CurLevelConfig = levelConfig;
         m_ItemsMapLayerDict = new Dictionary<int, GameCardItem[][]>();
         //准备设置父级数据
-        SetRoot(root, levelConfig.BottomMaxSize, levelConfig.LayerSizeArray.Length);   
+        SetRoot(root, levelConfig.BottomMaxSize, levelConfig.LayerSizeArray.Length);
+        //准备数据
+        var gameCardConfigArray = SetRandomCardConfig(levelConfig.ContainCardEnumArray, levelConfig.LayerSizeArray, levelConfig.ExtraItemArray);
+
+        int totalCount = 0;
         for (int n = 0; n < levelConfig.LayerSizeArray.Length; n++)
         {
             int curLayerMaxSize = levelConfig.BottomMaxSize - n;
@@ -51,8 +55,8 @@ public static class GameLevelUtility
             }
             
             int layer = n + 1;
-            int CreateCount = 0;
-            while (CreateCount < levelConfig.LayerSizeArray[n])
+            int createCount = 0;
+            while (createCount < levelConfig.LayerSizeArray[n])
             {
                 //随机 直到数量足够
                 int horizontal = -1;
@@ -63,7 +67,7 @@ public static class GameLevelUtility
                     go.name = $"Item_L{layer}_H{horizontal}_V{vertical}";
                     go.GetComponent<RectTransform>().anchoredPosition = CalculateCardLocation(leftTop, horizontal, vertical);
                     var gameCardItem = go.AddComponent<GameCardItem>();
-                    gameCardItem.SetData(RandomCardItem(levelConfig.ContainCardEnumArray), new GameCardData() {Layer = layer,Horizontal = horizontal, Vertical = vertical} );
+                    gameCardItem.SetData(gameCardConfigArray[totalCount], new GameCardData() {Layer = layer,Horizontal = horizontal, Vertical = vertical} );
                     //赋值数据
                     if (m_ItemsMapLayerDict.TryGetValue(layer, out var itemMaps))
                     {
@@ -81,7 +85,8 @@ public static class GameLevelUtility
                     }
 
                     CheckBottomCardMask(layer, horizontal, vertical, IsCover: true);
-                    CreateCount ++;
+                    totalCount++;
+                    createCount ++;
                 }
                 else
                 {
@@ -104,8 +109,9 @@ public static class GameLevelUtility
                 go.GetComponent<RectTransform>().anchoredPosition = CalculateCardExtraLocation(extraRootArray[extraIndex], extraIndex, j);
                 var gameCardItem = go.AddComponent<GameCardItem>();
                 m_ExtraStackMaps[extraIndex].Push(gameCardItem);
-                gameCardItem.SetExtraData(RandomCardItem(levelConfig.ContainCardEnumArray), extraIndex);
+                gameCardItem.SetExtraData(gameCardConfigArray[totalCount], extraIndex);
                 ExtraCheckBottomCardMask(extraIndex, true);
+                totalCount++;
             }
             
             ExtraCheckBottomCardMask(extraIndex, false);
@@ -138,6 +144,63 @@ public static class GameLevelUtility
         }
     }
     
+    /// <summary>
+    /// 设置随机卡牌配置
+    /// </summary>
+    /// <param name="cardEnumArray"></param>
+    /// <param name="layerSizeArray"></param>
+    /// <param name="extraArray"></param>
+    private static GameCardConfig[] SetRandomCardConfig(GameCardEnum[] cardEnumArray, int[] layerSizeArray, int[] extraArray)
+    {
+        //计算总数
+        int _itemCount = 0;
+        for (int i = 0; i < layerSizeArray.Length; i++)
+        {
+            _itemCount += layerSizeArray[i];
+        }
+        for (int i = 0; i < extraArray.Length; i++)
+        {
+            _itemCount += extraArray[i];
+        }
+        
+        // 平均之后数量
+        int _averageCount = _itemCount / 3;
+        
+        //顺序数组
+        int[] totalIndex = new int[_itemCount];
+        for (int i = 0; i < _itemCount; i++)
+        {
+            totalIndex[i] = i;
+        }
+        //打乱数组
+        System.Random random = new System.Random();
+        for (int i = totalIndex.Length - 1; i > 0; i--)
+        {
+            int j = random.Next(0, i + 1);
+
+            //交换元素
+            (totalIndex[i], totalIndex[j]) = (totalIndex[j], totalIndex[i]);
+        }
+
+        //乱序索引数组赋值
+        GameCardConfig[] gameCardConfigArray = new GameCardConfig[_itemCount];
+        int _point = 0;
+        for (int i = 0; i < _averageCount; i++)
+        {
+            var gameCardEnum = cardEnumArray[random.Next(0, cardEnumArray.Length)];
+            gameCardConfigArray[totalIndex[_point++]] = new GameCardConfig(){Type = gameCardEnum};
+            gameCardConfigArray[totalIndex[_point++]] = new GameCardConfig(){Type = gameCardEnum};
+            gameCardConfigArray[totalIndex[_point++]] = new GameCardConfig(){Type = gameCardEnum};
+        }
+        //剩余补充
+        var remainGameCardEnum = cardEnumArray[random.Next(0, cardEnumArray.Length)];
+        for (int i = _point; i < _itemCount; i++)
+        {
+            gameCardConfigArray[totalIndex[i]] = new GameCardConfig() { Type = remainGameCardEnum };
+        }
+
+        return gameCardConfigArray;
+    }
 
     private static GameCardConfig RandomCardItem(GameCardEnum[] array)
     {
